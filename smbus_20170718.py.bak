@@ -6,4 +6,4 @@ i2c = smbus.SMBus(1)
 print 'initial'
 
 
-test_2
+test
