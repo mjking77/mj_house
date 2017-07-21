@@ -9,6 +9,7 @@ DEV_REG_TEST = 0x40
 DAT_VAL = range (0,16)
 DAT_VAL1 = range (0,16)
 
+
 #Byte/word -- W/R
 bus.write_byte_data(DEV_ADDR, 0x30, 0x0a)
 time.sleep(0.1)
@@ -16,11 +17,16 @@ time.sleep(0.1)
 time.sleep(1)
 
 fb_i2c = bus.read_byte_data(DEV_ADDR, 0x30) + 1
-'''fbb_i2c = bus.read_block_data(DEV_ADDR, 0x50)
+R_DAT = bus.read_i2c_block_data(DEV_ADDR, 0x90, 8)
+
+for i in range(0,8):
+    print hex(R_DAT[i]),
+print '-------------------'
+'''
+'''
 print ("Here is 1st check %s ." %(fb_i2c))
 print ("Here is 2nd check {} .".format(fb_i2c+1))
-print ("Here is 2nd check {} .".format(fbb_i2c))
-'''
+print 'Here is 2nd check =', (fb_i2c+2), '<-'
 
 for i in range(8,24):
     for k in range (0,16):
