@@ -45,6 +45,31 @@ print ("Here is 1st check %s ." %(fb_i2c))
 print ("Here is 2nd check {} .".format(fb_i2c+1))
 print 'Here is 2nd check =', (fb_i2c+2), '<-'
 
+
+def msi2c_init(dev_addr):
+    print dev_addr
+    addr = hex(int(dev_addr) >>1)
+    print addr
+    cmd_init1 = [0x53, 0x45, 0x52, 0x44, 0x42, 0x00]
+    cmd_init2 = [0x81, 0x83, 0x84, 0x53, 0x7F, 0x35, 0x71] 
+    bus.write_i2c_block_data(addr, cmd_init1[0], cmd_init1[1:6])
+    time.sleep(0.3)
+    for i in range(0,len(cmd_init2)):
+        bus.write_byte(addr>>1, cmd_init2[i])
+        time.sleep(0.3)
+        
+    time.sleep(0.8)
+    print 'finish msi2c init'
+    return;
+
+def test(a, b):
+    print a+b
+    return;
+test(0xA1,8)
+msi2c_init(0xA0)    
+    
+
+
 '''
 for i in range(8,24):
     for k in range (0,16):
