@@ -127,3 +127,189 @@ def standard_deviation(x):
     return math.sqrt(variance(x))
 
 # numpy np.std ( x , ddot = y )  y=1 is sample sd
+
+
+###########################
+# CHAPTER  - 6            #
+# Probability             #
+###########################
+
+
+from collections import Counter
+import math, random
+
+# Normal Distribution
+def normal_pdf(x, mu=0, sigma=1):
+    sqrt_two_pi = math.sqrt(2 * math.pi)
+    return (math.exp(-(x-mu) ** 2 / 2 / sigma ** 2) / (sqrt_two_pi * sigma))
+
+def plot_normal_pdfs(plt):
+    xs = [x / 10.0 for x in range(-50, 50)]
+    plt.plot(xs,[normal_pdf(x,sigma=1) for x in xs],'-',label='mu=0,sigma=1')
+    plt.plot(xs,[normal_pdf(x,sigma=2) for x in xs],'--',label='mu=0,sigma=2')
+    plt.plot(xs,[normal_pdf(x,sigma=0.5) for x in xs],':',label='mu=0,sigma=0.5')
+    plt.plot(xs,[normal_pdf(x,mu=-1)   for x in xs],'-.',label='mu=-1,sigma=1')
+    plt.legend()
+    plt.show()
+
+#plot_normal_pdfs(plt)          #call normal distribution
+
+# Central Limitation
+
+def normal_cdf(x, mu=0,sigma=1):
+    return (1 + math.erf((x - mu) / math.sqrt(2) / sigma)) / 2
+
+def bernoulli_trial(p):
+    return 1 if random.random() < p else 0
+
+def binomial(p, n):
+    return sum(bernoulli_trial(p) for _ in range(n))
+
+def make_hist(p, n, num_points):
+    
+    data = [binomial(p, n) for _ in range(num_points)]
+    
+    # use a bar chart to show the actual binomial samples
+    histogram = Counter(data)
+    plt.bar([x - 0.4 for x in histogram.keys()],
+            [v / num_points for v in histogram.values()],
+            0.8,
+            color='0.75')
+    
+    mu = p * n
+    sigma = math.sqrt(n * p * (1 - p))
+
+    # use a line chart to show the normal approximation
+    xs = range(min(data), max(data) + 1)
+    ys = [normal_cdf(i + 0.5, mu, sigma) - normal_cdf(i - 0.5, mu, sigma) 
+          for i in xs]
+    plt.plot(xs,ys)
+    plt.show()
+
+#make_hist(0.75, 100, 10000)
+
+###########################
+# CHAPTER  - 8            #
+# Gradient Descent        #
+###########################
+
+
+#from linear_algebra import distance, vector_subtract, scalar_multiply
+#import linear_algebra
+import math, random
+
+def sum_of_squares(v):
+    """computes the sum of squared elements in v"""
+    return sum(v_i ** 2 for v_i in v)
+
+def difference_quotient(f, x, h):
+    return (f(x + h) - f(x)) / h
+
+def plot_estimated_derivative():
+
+    def square(x):
+        return x * x
+
+    def derivative(x):
+        return 2 * x
+
+    derivative_estimate = lambda x: difference_quotient(square, x, h=0.00001)
+
+    # plot to show they're basically the same
+    import matplotlib.pyplot as plt
+    x = range(-10,10)
+    plt.plot(x, map(derivative, x), 'rx')           # red  x
+    plt.plot(x, map(derivative_estimate, x), 'b+')  # blue +
+    plt.show()                                      # purple *, hopefully
+
+#plot_estimated_derivative()
+
+
+###########################
+# CHAPTER  - 9            #
+# Getting Data            #
+###########################
+
+# egrep.py
+import sys, re
+
+if __name__ == "__main__":     
+
+    # sys.argv is the list of command-line arguments
+    # sys.argv[0] is the name of the program itself
+    # sys.argv[1] will be the regex specfied at the command line
+    
+    regex = sys.argv[1]
+    
+    cnt1 =0
+    # for every line passed into the script
+    for line in sys.stdin:
+        # if it matches the regex, write it to stdout
+        if re.search(regex, line):
+            cnt1 +=1
+            sys.stdout.write(str(cnt)+'--'+line )  # or use line[:10] to list begin 10 words
+## How to use egrep.py , to compare sys.argv[1] match any line content of **.txt
+            #then list its line 
+## typing below in WIN cmd line,             
+## type SomeFile.txt | python egrep.py "[0-9]" | python line_count.py
+            
+
+# most_common_words.py
+import sys
+from collections import Counter
+
+if __name__ == "__main__":
+
+    # pass in number of words as first argument
+    try:
+        num_words = int(sys.argv[1])
+    except:
+        print "usage: most_common_words.py num_words"
+        sys.exit(1)   # non-zero exit code indicates error
+
+    counter = Counter(word.lower()               #Counter(), same word with its counts
+                      for line in sys.stdin             
+                      for word in line.strip().split()  
+                      if word)                          
+            
+    for word, count in counter.most_common(num_words):  # choice "num_words" most common  
+        sys.stdout.write(str(count))
+        sys.stdout.write("\t")
+        sys.stdout.write(word)
+        sys.stdout.write("\n")
+## How to use most_common_words.py , to count sys.argv[1] most word each line of **.txt
+            #then list its most words-- counter 
+## typing below in WIN cmd line,             
+## type the_bible.txt | python most_common_words.py 10
+
+
+#re_data.py  <- read write file by open
+cnt_hash = 0
+
+with open('test_script.txt','r') as f:    #use 'with" , can skip close file
+    for line in f:
+        if re.match("wriu",line):
+            cnt_hash +=1
+print cnt_hash
+
+def get_split_space(cntx):
+    return cntx.lower().split("-w")   # [x] split times by "-w", [-1]:all
+
+with open('test_script.txt','r') as f:
+    script_cnt = Counter(get_split_space(line)[0]   #[0]:fist of extraction
+                         for line in f
+                         if "wriu" in line)
+print script_cnt.items()
+
+
+
+#Scrapping the Web
+#need to install html5, bs4 by "pip install bs4 (or html5lib)"
+from bs4 import BeautifulSoup
+import requests
+html = requests.get("http://www.google.com").text
+soup = BeautifulSoup(html, 'html5lib')
+#print soup
+
+
+
